@@ -2,14 +2,21 @@ import psycopg2
 import names
 from datetime import datetime
 import logging
+import requests
+import json
 
-# TODO: setup DB user first ?
+# TODO: read db name from env variables
+# TODO: run liquibase migration - check status first
+
+
+# TODO: setup number of users to generate -n, usersToGenerate
 
 class BudgetDataLoad(object):
     def __init__(self):
         logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
-        self.no_of_users_to_create = 2
-        self.conn = psycopg2.connect("dbname=budgetapp user=budgetuser")
+        self.no_of_users_to_create = 1
+        self.conn = psycopg2.connect("dbname=budget4 user=budgetuser")
+        self.session = requests.Session()
 
     def main(self):
         self.setup_app_users(self.no_of_users_to_create)
@@ -18,16 +25,27 @@ class BudgetDataLoad(object):
 
     def setup_app_users(self, no_of_users_to_create):
         current_id = self.select_max_id_from_table("users")
+        headers = {'Content-Type': 'application/json;charset=UTF-8'}
+
         for _ in xrange(no_of_users_to_create):
             current_id += 1
-            self.insert_new_user_with_id(current_id)
-            self.insert_budget_types(current_id)
-            self.insert_categories_for_user(current_id)
-            self.insert_budgets_for_user(current_id)
+
+            user_data = json.dumps({'username':'user'+ str(current_id) +'@test.com','password':'Password1'})
+            r = self.session.post(url = 'http://localhost:8080/api/users', data = user_data, headers = headers)
+            print r.text
+
+
+
+# TODO: Add create user via endpoint
+
+            # self.insert_new_user_with_id(current_id)
+            # self.insert_budget_types(current_id)
+            # self.insert_categories_for_user(current_id)
+            # self.insert_budgets_for_user(current_id)
 
     def select_max_id_from_table(self, table_name, column="id"):
         cur = self.conn.cursor()
-        select_query = "SELECT MAX( " +column+ ") FROM "+table_name +" ;"
+        select_query = "SELECT MAX( " + column + ") FROM " + table_name + " ;"
         # data = (column, )
         cur.execute(select_query)
         max_id = cur.fetchone()[0]
@@ -132,6 +150,56 @@ class BudgetDataLoad(object):
                      type_id ))
         self.conn.commit()
         cur.close()
+
+    # TODO
+    def insert_transactions_for_budget(self, budget_id):
+        name = ""
+        amount = "0.0"
+        remark = "remark"
+        auto = False
+        #todo : extract to method : get_months_days_back()
+        transaction_on = datetime.utcnow().replace(day=1).strftime('%Y-%m-%d')
+        self.get_timestamp()
+        recurring_id = ""
+
+        cur = self.conn.cursor()
+        cur.execute("""
+                        INSERT INTO transactions (name,amount,remark,auto,transaction_on,created_at,budget_id,recurring_id)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);
+                        """,
+                    (name, amount, remark, auto, transaction_on, self.get_timestamp(), budget_id, recurring_id ))
+        self.conn.commit()
+        cur.close()
+
+    #TODO
+    def insert_recurrings_for_budget_type(self, budget_type_id):
+        amount = "0.0"
+        type = ""
+        last_run_at = ""
+        created_at = ""
+        budget_type_id = ""
+        remark = ""
+
+        cur = self.conn.cursor()
+        cur.execute("""
+                        INSERT INTO recurrings (amount,type,last_run_at,created_at,budget_type_id,remark)
+                        VALUES (%s,%s,%s,%s,%s,%s);
+                            """,
+                    (amount, type, last_run_at, created_at, budget_type_id, remark ))
+        self.conn.commit()
+        cur.close()
+
+    #TODO
+    def get_months_days_back(self, months, days):
+        #todo .minus_months(months).minus_days(days)
+        transaction_on = datetime.utcnow().strftime('%Y-%m-%d')
+
+    def get_first_day_months_back(self, months):
+        #todo .minus_months(months).minus_days(days)
+        transaction_on = datetime.utcnow().replace(day=1).strftime('%Y-%m-%d')
+
+    def get_amount_from_range(self, min, max):
+        return str(1)  #random_range(min,max)
 
     @staticmethod
     def get_timestamp():
