@@ -12,9 +12,13 @@ class DataLoader(object):
         self.args = parse_args()
         print_args_info(self.args)
 
-        self.conn = psycopg2.connect("dbname=" + self.args.dbname +
-                                     " user=" + self.args.dbuser +
-                                     " password=" + self.args.dbpassword)
+        conn_string = "host='localhost'" \
+                      " dbname="+ self.args.dbname +\
+                      " user=" + self.args.dbuser + \
+                      " password=" + self.args.dbpassword
+        logging.info( "Connecting to database\n->%s" % conn_string)
+        self.conn = psycopg2.connect(conn_string)
+
         self.session = requests.Session()
 
     def main(self):
