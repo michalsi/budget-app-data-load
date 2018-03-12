@@ -27,7 +27,7 @@ class DataLoader(object):
         logging.info("Script is finished")
 
     def setup_app_users(self, no_of_users_to_create):
-        root_url = self.args.url
+        root_url = "http://" + self.args.url + ":8080"
         current_id = self.select_max_id_from_table("users")
         headers = {'Content-Type': 'application/json;charset=UTF-8'}
 
