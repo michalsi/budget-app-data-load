@@ -58,7 +58,7 @@ def parse_args():
     parser.add_argument("-u", "--url", default="localhost:8080", help="Target URL of application")
     parser.add_argument("-d", "--dbname", default="budgetapp", help="Budget App Data Base name")
     parser.add_argument("-s", "--dbuser", default="budgetuser", help="Budget App Data Base user")
-    parser.add_argument("-p", "--dbpassword", default="budgetuser", help="Budget App Data Base user")
+    parser.add_argument("-p", "--dbpassword", default="mysecretpassword", help="Budget App Data Base user")
 
     parser.add_argument("-n", "--numberOfUsers", type=int, default=1, help="Target URL of application")
     return parser.parse_args()
