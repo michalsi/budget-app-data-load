@@ -12,7 +12,7 @@ class DataLoader(object):
         self.args = parse_args()
         print_args_info(self.args)
 
-        conn_string = "host='localhost'" \
+        conn_string = "host=" + self.args.url +\
                       " dbname="+ self.args.dbname +\
                       " user=" + self.args.dbuser + \
                       " password=" + self.args.dbpassword
